@@ -9,12 +9,11 @@ namespace PotatoEval {
 		Number = 1,
 		Boolean = 2,
 		String = 4,
-		Identifier = 8,
-		//Context = 16,
+		Address = 8,
 		Any = 255
 	}
 
-	public struct Value : /*IContext,*/ IEquatable<Value> {
+	public struct Value : IEquatable<Value> {
 
 		public static readonly Value Void = new Value();
 		public static readonly Value True = true;
@@ -26,7 +25,6 @@ namespace PotatoEval {
 
 		private ValueKind m_type;
 		private uint m_hash;
-		//private IContext m_context;
 		private double m_number;
 		private string m_string;
 
@@ -36,7 +34,6 @@ namespace PotatoEval {
 			m_type = type;
 			m_string = string.Empty;
 			m_number = 0;
-			//m_context = null;
 			if (type == ValueKind.Void) {
 				m_hash = 0;
 			} else {
@@ -47,39 +44,26 @@ namespace PotatoEval {
 			m_type = type;
 			m_string = value;
 			m_number = 0;
-			//m_context = null;
 			m_hash = Hash(m_type, m_string, m_number);
 		}
 		private Value(string value) {
 			m_type = ValueKind.String;
 			m_string = value;
 			m_number = 0;
-			//m_context = null;
 			m_hash = Hash(m_type, m_string, m_number);
 		}
 		private Value(double value) {
 			m_type = ValueKind.Number;
 			m_string = string.Empty;
 			m_number = value;
-			//m_context = null;
 			m_hash = Hash(m_type, m_string, m_number);
 		}
 		private Value(bool value) {
 			m_type = ValueKind.Boolean;
 			m_string = string.Empty;
 			m_number = value ? 1 : 0;
-			//m_context = null;
 			m_hash = Hash(m_type, m_string, m_number);
 		}
-		/*
-		private Value(IContext value) {
-			m_type = ValueKind.Context;
-			m_string = string.Empty;
-			m_number = 0;
-			//m_context = value;
-			m_hash = Hash(m_type, m_string, m_number);
-		}
-		*/
 		private static uint Hash(ValueKind type, string str, double num) {
 			int hash = 117;
 			hash = (hash << 5) ^ type.GetHashCode();
@@ -87,12 +71,6 @@ namespace PotatoEval {
 			hash = (hash << 7) ^ num.GetHashCode();
 			return unchecked((uint)hash);
 		}
-
-		/*
-		public static Value FromContext(IContext context) {
-			return new Value(context);
-		}
-		*/
 
 		#endregion
 
@@ -133,8 +111,8 @@ namespace PotatoEval {
 
 		#region Implicit Conversions
 
-		public static implicit operator Value(Identifier value) {
-			return new Value(ValueKind.Identifier, value.ToString());
+		public static implicit operator Value(Address value) {
+			return new Value(ValueKind.Address, value.ToString());
 		}
 		public static implicit operator Value(bool value) {
 			return new Value(value);
@@ -177,35 +155,22 @@ namespace PotatoEval {
 
 		#region Type Checks
 
-		//public bool IsContext { get { return IsType(ValueKind.Context); } }
 		public bool IsBool { get { return IsType(ValueKind.Boolean); } }
 		public bool IsNumber { get { return IsType(ValueKind.Number); } }
 		public bool IsString { get { return IsType(ValueKind.String); } }
 		public bool IsVoid { get { return IsType(ValueKind.Void); } }
-		public bool IsIdentifier { get { return IsType(ValueKind.Identifier); } }
+		public bool IsAddress { get { return IsType(ValueKind.Address); } }
 
 		#endregion
 
 		#region Type Conversions
 
-		/*
-		public IContext AsContext {
+		public Address AsAddress {
 			get {
-				if (IsContext) {
-					return m_context;
+				if (IsAddress) {
+					return new Address(m_string);
 				} else {
-					throw InvalidCast(m_type, ValueKind.Context);
-				}
-			}
-		}
-		*/
-
-		public Identifier AsIdentifier {
-			get {
-				if (IsIdentifier) {
-					return new Identifier(m_string);
-				} else {
-					throw InvalidCast(m_type, ValueKind.Identifier);
+					throw InvalidCast(m_type, ValueKind.Address);
 				}
 			}
 		}
@@ -334,23 +299,6 @@ namespace PotatoEval {
 			return (type & m_type) == m_type;
 		}
 
-		/*
-		public Value GetValue(Identifier identifier) {
-			if (IsContext) {
-				return m_context.GetValue(identifier);
-			} else {
-				throw InvalidCast(m_type, ValueKind.Context);
-			}
-		}
-		public Value Invoke(Identifier identifier, Value[] arguments) {
-			if (IsContext) {
-				return m_context.Invoke(identifier, arguments);
-			} else {
-				throw InvalidCast(m_type, ValueKind.Context);
-			}
-		}
-		*/
-
 		public bool Equals(Value other) {
 			return other.m_hash == m_hash;
 		}
@@ -368,8 +316,7 @@ namespace PotatoEval {
 			switch (Type) {
 				case ValueKind.Boolean: return m_number == 0 ? "false" : "true";
 				case ValueKind.String:
-				//case ValueKind.Context:
-				case ValueKind.Identifier: return m_string;
+				case ValueKind.Address: return m_string;
 				case ValueKind.Number: return m_number.ToString(CultureInfo.InvariantCulture);
 				case ValueKind.Void: return "void";
 				default: throw new NotImplementedException();

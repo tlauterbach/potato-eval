@@ -11,18 +11,23 @@ namespace PotatoEval {
 		) { }
 	}
 
-	public class UndefinedValueException : Exception {
-		internal UndefinedValueException(string type, Identifier identifier) : base(
+	public class UndefinedMemberException : Exception {
+		internal UndefinedMemberException(string type, Identifier identifier) : base(
 			$"{type} with identifier `{identifier}' is not defined"
+		) { }
+	}
+	public class ContextOperationException : Exception {
+		internal ContextOperationException(string operation, string type, Identifier identifier) : base(
+			$"Cannot {operation} with identifier {identifier} because it is a {type}"
 		) { }
 	}
 	public class FunctionException : Exception {
 		internal FunctionException(string message) : base(message) {
 		}
 	}
-	public class AddIdentifierException : Exception {
-		internal AddIdentifierException(string type, Identifier id) : base(
-			$"{type} with identifier `{id}' is already defined. Did you forget to remove an old {type}?"
+	public class PrexistingMemberException : Exception {
+		internal PrexistingMemberException(Identifier id) : base(
+			$"Member with identifier `{id}' is already defined"
 		) { }
 	}
 

@@ -1,7 +1,7 @@
 ﻿namespace PotatoEval {
 
 	internal class ConditionalParselet : IInfixParselet {
-		public int Precedence { get { return m_bindingPower.Precedence; } }
+		public int Precedence { get { return m_bindingPower; } }
 
 		private BindingPower m_bindingPower;
 
@@ -21,7 +21,7 @@
 			int label1 = parser.InstructionCount;
 			parser.ChangeArgument(branch1, Instruction.Encode(label1 - branch1));
 
-			parser.ParseExpression(m_bindingPower.Calculate());
+			parser.ParseExpression(m_bindingPower);
 			int label2 = parser.InstructionCount;
 			parser.ChangeArgument(branch2, Instruction.Encode(label2 - branch2));
 		}

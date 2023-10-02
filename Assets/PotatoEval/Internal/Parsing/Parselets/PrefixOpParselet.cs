@@ -11,7 +11,7 @@
 		}
 
 		public void Parse(IParser parser, Token token) {
-			parser.ParseExpression(m_opPrecedence.Calculate());
+			parser.ParseExpression(m_opPrecedence);
 			parser.Emit(m_opCode);
 		}
 	}

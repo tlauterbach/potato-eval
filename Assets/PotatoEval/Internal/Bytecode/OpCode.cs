@@ -5,10 +5,10 @@
 		LoadBoolConst,
 		LoadStringConst,
 		LoadIdentifierConst,
-		LoadValue,
+		ValueOf,
 
+		Access,
 		Invoke,
-		IdOf,
 		Addition,
 		Subtraction,
 		Multiplication,
@@ -35,8 +35,6 @@
 		JumpIfTrue,
 		JumpIfFalse,
 		Duplicate,
-		PushContext,
-		PopContext
 	}
 
 }

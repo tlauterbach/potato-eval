@@ -50,7 +50,9 @@ namespace PotatoEval {
 			}
 		}
 
-
+		public override string ToString() {
+			return $"{OpCode}:{Value}";
+		}
 	}
 
 }

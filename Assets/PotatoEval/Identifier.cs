@@ -9,12 +9,12 @@ namespace PotatoEval {
 		private string m_name;
 		private uint m_hash;
 
-		public Identifier(string name) {
-			m_name = name;
-			if (string.IsNullOrEmpty(name)) {
+		public Identifier(string path) {
+			m_name = path;
+			if (string.IsNullOrEmpty(m_name)) {
 				m_hash = 0;
 			} else {
-				m_hash = Util.FNVHash32(name);
+				m_hash = Util.FNVHash32(m_name);
 			}
 		}
 

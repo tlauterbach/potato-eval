@@ -2,7 +2,7 @@
 
 	internal class LogicalAndOpParselet : IInfixParselet {
 
-		public int Precedence { get { return m_precedence.Precedence; } }
+		public int Precedence { get { return m_precedence; } }
 
 		private readonly BindingPower m_precedence;
 
@@ -14,7 +14,7 @@
 			parser.Emit(OpCode.Duplicate);
 			int branch = parser.Emit(OpCode.JumpIfFalse);
 
-			parser.ParseExpression(m_precedence.Calculate());
+			parser.ParseExpression(m_precedence);
 			parser.Emit(OpCode.LogicalAnd);
 
 			int label = parser.InstructionCount;

@@ -6,6 +6,8 @@ namespace PotatoEval {
 	internal class EvaluatorInternal {
 
 		private static readonly Dictionary<OpCode, string> m_opCodeNames = new Dictionary<OpCode, string> {
+			{ OpCode.Access, "Access (.)" },
+			{ OpCode.ValueOf, "Value Of ($)" },
 			{ OpCode.Addition, "Addition (+)" },
 			{ OpCode.Subtraction, "Subtraction (-)" },
 			{ OpCode.Multiplication, "Multiplication (*)" },
@@ -27,24 +29,19 @@ namespace PotatoEval {
 			{ OpCode.LessThan, "Less Than (<)" },
 			{ OpCode.LessThanOrEqualTo, "Less Than or Equal To (<=)" },
 			{ OpCode.Negate, "Negate (-)" },
-
-
 		};
 
 		private Stack<Value> m_valueStack;
-		private Stack<IContext> m_contextStack;
 		private IErrorLogger m_logger;
 
 		public EvaluatorInternal() {
 			m_valueStack = new Stack<Value>();
-			m_contextStack = new Stack<IContext>();
 		}
 
 		public Value Evaluate(InstructionBlock instructions, IContext context, IErrorLogger logger) {
 			m_logger = logger;
 			m_valueStack.Clear();
-			m_contextStack.Clear();
-			m_contextStack.Push(context);
+
 			Instruction[] instructionArray = instructions.Instructions;
 			string[] stringTable = instructions.StringTable;
 			int programCounter = 0;
@@ -71,17 +68,10 @@ namespace PotatoEval {
 						break;
 					}
 					case OpCode.LoadIdentifierConst: {
-						PushValue(new Identifier(stringTable[Instruction.DecodeInt(instr.Value)]));
+						PushValue(new Address(stringTable[Instruction.DecodeInt(instr.Value)]));
 						break;
 					}
-					/*
-					case OpCode.LoadValue: {
-						Identifier identifier = new Identifier(stringTable[Instruction.DecodeInt(instr.Value)]);
-						Value value = m_contextStack.Peek().GetValue(identifier);
-						PushValue(value);
-						break;
-					}
-					*/
+					
 
 					// invoke
 
@@ -91,26 +81,12 @@ namespace PotatoEval {
 						while (--argCount >= 0) {
 							arguments[argCount] = PopValue();
 						}
-						Identifier function = PopValue().AsIdentifier;
-						Value result = m_contextStack.Peek().Invoke(function, arguments);
-						PushValue(result);
-						break;
-					}
-
-					// context
-
-					case OpCode.PushContext: {
-						//PushContext(PopValue().AsContext);
-						Value value = PopValue();
-						if (value.IsIdentifier) {
-							PushContext(m_contextStack.Peek().GetContext(value.AsIdentifier));
-						} else {
-							m_logger.LogError($"Identifier is required for Pushing Context");
+						Address address = PopValue().AsAddress;
+						IContext loadContext = AddressToContext(context,address);
+						if (loadContext != null) {
+							Value result = loadContext.Invoke(address.Last, arguments);
+							PushValue(result);
 						}
-						break;
-					}
-					case OpCode.PopContext: {
-						PopContext();
 						break;
 					}
 
@@ -121,37 +97,43 @@ namespace PotatoEval {
 						break;
 					}
 					case OpCode.JumpIfFalse: {
-						if (PopAndLoadValue() == false) {
+						if (PopValue() == false) {
 							programCounter += Instruction.DecodeInt(instr.Value) - 1;
 						}
 						break;
 					}
 					case OpCode.JumpIfTrue: {
-						if (PopAndLoadValue() == true) {
+						if (PopValue() == true) {
 							programCounter += Instruction.DecodeInt(instr.Value) - 1;
 						}
 						break;
 					}
 					case OpCode.Duplicate: {
-						if (m_valueStack.Count > 0) {
-							PushValue(m_valueStack.Peek());
-						} else {
-							m_logger.LogError("No Value on Value Stack to Duplicate");
-						}
+						Duplicate();
 						break;
 					}
 
 					// Operators
 
+					case OpCode.Access: {
+						PushValue(BinaryAddress(name, Access));
+						break;
+					}
+					case OpCode.ValueOf: {
+						Address address = PopValue().AsAddress;
+						PushValue(context.ConvertAddress(address).GetValue());
+						break;
+					}
+
 					case OpCode.EqualTo: {
-						Value rhs = PopAndLoadValue();
-						Value lhs = PopAndLoadValue();
+						Value rhs = PopValue();
+						Value lhs = PopValue();
 						PushValue(lhs == rhs);
 						break;
 					}
 					case OpCode.NotEqualTo: {
-						Value rhs = PopAndLoadValue();
-						Value lhs = PopAndLoadValue();
+						Value rhs = PopValue();
+						Value lhs = PopValue();
 						PushValue(lhs != rhs);
 						break;
 					}
@@ -241,23 +223,34 @@ namespace PotatoEval {
 				m_logger.LogError($"Missing operators in expression ({m_valueStack.Count} values)");
 				return Value.Void;
 			}
-			return PopAndLoadValue();
+			return PopValue();
 		}
 
-		private Value PopAndLoadValue() {
-			Value value = PopValue();
-			if (value.IsIdentifier) {
-				if (m_contextStack.Count >= 1) {
-					return m_contextStack.Peek().GetValue(value.AsIdentifier);
-				} else {
-					m_logger.LogError($"Context Stack is empty");
-					return Value.Void;
+		private IContext AddressToContext(IContext context, Address address) {
+			if (address == Address.Empty) {
+				m_logger.LogError("Received empty address");
+				return null;
+			}
+			int index = 0;
+			IContext loadContext = context;
+			while (index < address.Count-1) {
+				try {
+					loadContext = loadContext.GetContext(address[index++]);
+				} catch (Exception e) {
+					m_logger.LogError(e);
+					return null;
 				}
+			}
+			return loadContext;
+		}
+
+		private void Duplicate() {
+			if (m_valueStack.Count > 0) {
+				m_valueStack.Push(m_valueStack.Peek());
 			} else {
-				return value;
+				m_logger.LogError("No Value on Value Stack to Duplicate");
 			}
 		}
-
 		private void PushValue(Value value) {
 			m_valueStack.Push(value);
 		}
@@ -269,20 +262,9 @@ namespace PotatoEval {
 				return Value.Void;
 			}
 		}
-		private void PushContext(IContext context) {
-			m_contextStack.Push(context);
-		}
-		private IContext PopContext() {
-			if (m_contextStack.Count > 0) {
-				return m_contextStack.Pop();
-			} else {
-				m_logger.LogError("Context Stack is empty");
-				return null;
-			}
-		}
 
 		private T UnaryInt32<T>(string name, Func<int,T> op) {
-			Value operand = PopAndLoadValue();
+			Value operand = PopValue();
 			if (operand.IsNumber) {
 				try {
 					return op(operand.AsInt32);
@@ -295,7 +277,7 @@ namespace PotatoEval {
 			return default;
 		}
 		private T UnaryDouble<T>(string name, Func<double,T> op) {
-			Value operand = PopAndLoadValue();
+			Value operand = PopValue();
 			if (operand.IsNumber) {
 				return op(operand.AsDouble);
 			}
@@ -304,7 +286,7 @@ namespace PotatoEval {
 		}
 
 		private T UnaryBool<T>(string name, Func<bool, T> op) {
-			Value operand = PopAndLoadValue();
+			Value operand = PopValue();
 			if (operand.IsBool) {
 				return op(operand.AsBool);
 			}
@@ -313,8 +295,8 @@ namespace PotatoEval {
 		}
 
 		private T BinaryDouble<T>(string name, Func<double, double, T> op) {
-			Value rhs = PopAndLoadValue();
-			Value lhs = PopAndLoadValue();
+			Value rhs = PopValue();
+			Value lhs = PopValue();
 			if (rhs.IsNumber && lhs.IsNumber) {
 				return op(rhs.AsDouble, lhs.AsDouble);
 			}
@@ -322,8 +304,8 @@ namespace PotatoEval {
 			return default;
 		}
 		private T BinaryInt32<T>(string name, Func<int, int, T> op) {
-			Value rhs = PopAndLoadValue();
-			Value lhs = PopAndLoadValue();
+			Value rhs = PopValue();
+			Value lhs = PopValue();
 			if (rhs.IsNumber && lhs.IsNumber) {
 				try {
 					return op(rhs.AsInt32, lhs.AsInt32);
@@ -336,13 +318,26 @@ namespace PotatoEval {
 			return default;
 		}
 		private T BinaryBool<T>(string name, Func<bool, bool,T> op) {
-			Value rhs = PopAndLoadValue();
-			Value lhs = PopAndLoadValue();
+			Value rhs = PopValue();
+			Value lhs = PopValue();
 			if (rhs.IsBool && lhs.IsBool) {
 				return op(rhs.AsBool, lhs.AsBool);
 			}
 			m_logger.LogError($"{name} requires both values be Booleans");
 			return default;
+		}
+		private T BinaryAddress<T>(string name, Func<Address,Address,T> op) {
+			Value rhs = PopValue();
+			Value lhs = PopValue();
+			if (rhs.IsAddress && lhs.IsAddress) {
+				return op(rhs.AsAddress, lhs.AsAddress);
+			}
+			m_logger.LogError($"{name} requires both values be Addresses");
+			return default;
+		}
+
+		private static Address Access(Address rhs, Address lhs) {
+			return lhs.Enqueue(rhs);
 		}
 
 		private static bool LogicalAnd(bool rhs, bool lhs) {

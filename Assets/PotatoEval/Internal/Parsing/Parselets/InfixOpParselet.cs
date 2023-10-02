@@ -2,7 +2,7 @@
 
 	internal class InfixOpParselet : IInfixParselet {
 
-		public int Precedence { get { return m_opPrecedence.Precedence; } }
+		public int Precedence { get { return m_opPrecedence; } }
 
 		private readonly BindingPower m_opPrecedence;
 		private readonly OpCode m_opCode;
@@ -13,7 +13,7 @@
 		}
 
 		public void Parse(IParser parser, Token token) {
-			parser.ParseExpression(m_opPrecedence.Calculate());
+			parser.ParseExpression(m_opPrecedence);
 			parser.Emit(m_opCode);
 		}
 

@@ -2,7 +2,7 @@
 
 	internal class FunctionParselet : IInfixParselet {
 
-		public int Precedence { get { return m_bindingPower.Precedence; } }
+		public int Precedence { get { return m_bindingPower; } }
 
 		private BindingPower m_bindingPower;
 

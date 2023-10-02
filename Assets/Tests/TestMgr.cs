@@ -35,6 +35,8 @@ public class TestMgr : MonoBehaviour {
 		("false || true", false || true),
 		("true || true", true || true),
 		("true && (false || true && true)", true && (false || true && true)),
+		("true ? 1 : 0", 1),
+		("false ? 1 : 0", 0),
 	};
 	private static readonly List<(string, object)> m_testFunctions = new List<(string, object)>() {
 		("num5()", 5),
@@ -43,28 +45,30 @@ public class TestMgr : MonoBehaviour {
 		("concat(\"a\",\"b\")", "ab"),
 		("concat(\"abc\",\"def\")", "abcdef"),
 		("set(foo, 5)", Value.Void),
-		("foo", 5),
 		("get(foo)", 5),
 		("get(foo) + 5", 10),
 		("set(id, foo)", Value.Void),
 		("get(get(id))", 5),
-		("set(bar, true)", Value.Void),
-		("set(foo, true)", Value.Void),
-		("bar == true", true),
-		("bar != false", true),
-		("bar && bar", true),
-		("bar == foo", true),
 	};
 	private static readonly List<(string, object)> m_testContexts = new List<(string, object)>() {
+		("set(bar, true)", Value.Void),
+		("set(foo, true)", Value.Void),
+		("$foo", true),
+		("$bar == true", true),
+		("$bar != false", true),
+		("$bar && $bar", true),
+		("$bar == $foo", true),
+		("delete(bar)", true),
+		("delete(foo)", true),
 		("context.num5()", 5),
 		("context.set(foo, 3)", Value.Void),
-		("context.get(foo)", 3),
-		("context.foo", 3),
+		("$context.foo", 3),
 		("num5() + context.get(foo)", 8),
-		("num5() + context.foo", 8),
-		("get(context.foo) + (get(foo) ? 3 : 0)", 6),
-		("context.set(fizz, foo)", Value.Void),
-		("context.fizz == foo", true)
+		("num5() + $context.foo", 8),
+		("get(context.foo)", 3),
+		("context.set(fizz, context.foo)", Value.Void),
+		("$context.fizz == context.foo", true),
+		("get($context.fizz)", 3),
 	};
 
 
@@ -76,29 +80,29 @@ public class TestMgr : MonoBehaviour {
 		m_context1.AddContext("context", m_context2);
 
 		foreach ((string,object) tuple in m_testMathematic) {
-			AssertIsTrue(InputEquals(tuple.Item1, tuple.Item2), tuple.Item1);
+			AssertEquals(tuple, tuple.Item1);
 		}
 		foreach ((string, object) tuple in m_testLogic) {
-			AssertIsTrue(InputEquals(tuple.Item1, tuple.Item2), tuple.Item1);
+			AssertEquals(tuple, tuple.Item1);
 		}
 		foreach ((string, object) tuple in m_testFunctions) {
-			AssertIsTrue(InputEquals(tuple.Item1, tuple.Item2), tuple.Item1);
+			AssertEquals(tuple, tuple.Item1);
 		}
 		foreach ((string, object) tuple in m_testContexts) {
-			AssertIsTrue(InputEquals(tuple.Item1, tuple.Item2), tuple.Item1);
+			AssertEquals(tuple, tuple.Item1);
 		}
 	}
 
-	private void AssertIsTrue(bool condition, string message) {
-		if (condition) {
+	private void AssertEquals((string,object) tuple, string message) {
+		if (InputEquals(tuple.Item1, tuple.Item2, out Value value)) {
 			Debug.Log(message);
 		} else {
-			Debug.LogError(message);
+			Debug.LogError($"{message}\nReceived: {value}\nExpected: {tuple.Item2}");
 		}
 	}
 
-	private bool InputEquals(string input, object obj) {
-		if (!Evaluate(input, out Value value)) {
+	private bool InputEquals(string input, object obj, out Value value) {
+		if (!Evaluate(input, out value)) {
 			return false;
 		}
 		if (obj is Value objValue) {
