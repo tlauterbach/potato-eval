@@ -8,6 +8,7 @@ namespace PotatoEval {
 		private static readonly Dictionary<OpCode, string> m_opCodeNames = new Dictionary<OpCode, string> {
 			{ OpCode.Access, "Access (.)" },
 			{ OpCode.ValueOf, "Value Of ($)" },
+			{ OpCode.Assignment, "Assignment (=)" },
 			{ OpCode.Addition, "Addition (+)" },
 			{ OpCode.Subtraction, "Subtraction (-)" },
 			{ OpCode.Multiplication, "Multiplication (*)" },
@@ -32,15 +33,18 @@ namespace PotatoEval {
 		};
 
 		private Stack<Value> m_valueStack;
+		private Stack<Value> m_storage;
 		private IErrorLogger m_logger;
 
 		public EvaluatorInternal() {
 			m_valueStack = new Stack<Value>();
+			m_storage = new Stack<Value>();
 		}
 
 		public Value Evaluate(InstructionBlock instructions, IContext context, IErrorLogger logger) {
 			m_logger = logger;
 			m_valueStack.Clear();
+			m_storage.Clear();
 
 			Instruction[] instructionArray = instructions.Instructions;
 			string[] stringTable = instructions.StringTable;
@@ -90,7 +94,7 @@ namespace PotatoEval {
 						break;
 					}
 
-					// Jumps and Duplicate
+					// Utility
 
 					case OpCode.Jump: {
 						programCounter += Instruction.DecodeInt(instr.Value) - 1;
@@ -112,6 +116,15 @@ namespace PotatoEval {
 						Duplicate();
 						break;
 					}
+					case OpCode.PushToStorage: {
+						m_storage.Push(PopValue());
+						break;
+					}
+					case OpCode.PopFromStorage: {
+						PushValue(m_storage.Pop());
+						break;
+					}
+
 
 					// Operators
 
@@ -120,11 +133,24 @@ namespace PotatoEval {
 						break;
 					}
 					case OpCode.ValueOf: {
-						Address address = PopValue().AsAddress;
-						PushValue(context.ConvertAddress(address).GetValue());
+						Value value = PopValue();
+						if (value.IsAddress) {
+							PushValue(context.ConvertAddress(value.AsAddress).GetValue());
+						} else {
+							m_logger.LogError($"{name} requires operand to be an Address");
+						}
 						break;
 					}
-
+					case OpCode.Assignment: {
+						Value rhs = PopValue();
+						Value lhs = PopValue();
+						if (lhs.IsAddress) {
+							PushValue(context.ConvertAddress(lhs.AsAddress).SetValue(rhs));
+						} else {
+							m_logger.LogError($"{name} requires left-hand operand to be an Address");
+						}
+						break;
+					}
 					case OpCode.EqualTo: {
 						Value rhs = PopValue();
 						Value lhs = PopValue();
@@ -269,11 +295,11 @@ namespace PotatoEval {
 				try {
 					return op(operand.AsInt32);
 				} catch {
-					m_logger.LogError($"{name} requires value be a valid Int32");
+					m_logger.LogError($"{name} requires operand to be a valid Int32");
 					return default;
 				}
 			}
-			m_logger.LogError($"{name} requires value to be a Number");
+			m_logger.LogError($"{name} requires operand to be a Number");
 			return default;
 		}
 		private T UnaryDouble<T>(string name, Func<double,T> op) {
@@ -281,7 +307,7 @@ namespace PotatoEval {
 			if (operand.IsNumber) {
 				return op(operand.AsDouble);
 			}
-			m_logger.LogError($"{name} requires value to be a Number");
+			m_logger.LogError($"{name} requires operand to be a Number");
 			return default;
 		}
 
@@ -290,7 +316,7 @@ namespace PotatoEval {
 			if (operand.IsBool) {
 				return op(operand.AsBool);
 			}
-			m_logger.LogError($"{name} requires value to be a Boolean");
+			m_logger.LogError($"{name} requires operand to be a Boolean");
 			return default;
 		}
 
@@ -300,7 +326,7 @@ namespace PotatoEval {
 			if (rhs.IsNumber && lhs.IsNumber) {
 				return op(rhs.AsDouble, lhs.AsDouble);
 			}
-			m_logger.LogError($"{name} requires both values be Numbers");
+			m_logger.LogError($"{name} requires both operands be Numbers");
 			return default;
 		}
 		private T BinaryInt32<T>(string name, Func<int, int, T> op) {
@@ -314,7 +340,7 @@ namespace PotatoEval {
 					return default;
 				}
 			}
-			m_logger.LogError($"{name} requires both values be Numbers");
+			m_logger.LogError($"{name} requires both operands be Numbers");
 			return default;
 		}
 		private T BinaryBool<T>(string name, Func<bool, bool,T> op) {
@@ -323,7 +349,7 @@ namespace PotatoEval {
 			if (rhs.IsBool && lhs.IsBool) {
 				return op(rhs.AsBool, lhs.AsBool);
 			}
-			m_logger.LogError($"{name} requires both values be Booleans");
+			m_logger.LogError($"{name} requires both operands be Booleans");
 			return default;
 		}
 		private T BinaryAddress<T>(string name, Func<Address,Address,T> op) {
@@ -332,13 +358,14 @@ namespace PotatoEval {
 			if (rhs.IsAddress && lhs.IsAddress) {
 				return op(rhs.AsAddress, lhs.AsAddress);
 			}
-			m_logger.LogError($"{name} requires both values be Addresses");
+			m_logger.LogError($"{name} requires both operands be Addresses");
 			return default;
 		}
 
 		private static Address Access(Address rhs, Address lhs) {
 			return lhs.Enqueue(rhs);
 		}
+
 
 		private static bool LogicalAnd(bool rhs, bool lhs) {
 			return lhs && rhs;

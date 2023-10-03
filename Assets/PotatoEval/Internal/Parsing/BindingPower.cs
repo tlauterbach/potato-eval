@@ -26,13 +26,17 @@
 		public static readonly BindingPower Assignment		= new BindingPower( 20, Associativity.RightToLeft);
 		public static readonly BindingPower Comma			= new BindingPower( 10, Associativity.LeftToRight);
 
-		private int m_precedence;
+		public int BasePrecedence { get { return m_basePrecedence; } }
+
+		private int m_basePrecedence;
+		private int m_calcPrecedence;
 		
 		private BindingPower(int precedence, Associativity associativity) {
-			m_precedence = precedence - (associativity == Associativity.RightToLeft ? 1 : 0);
+			m_basePrecedence = precedence;
+			m_calcPrecedence = precedence - (associativity == Associativity.RightToLeft ? 1 : 0);
 		}
 		public static implicit operator int(BindingPower value) {
-			return value.m_precedence;
+			return value.m_calcPrecedence;
 		}
 
 	}

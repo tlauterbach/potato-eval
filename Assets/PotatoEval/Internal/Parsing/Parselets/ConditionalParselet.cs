@@ -1,7 +1,7 @@
 ﻿namespace PotatoEval {
 
 	internal class ConditionalParselet : IInfixParselet {
-		public int Precedence { get { return m_bindingPower; } }
+		public int Precedence { get { return m_bindingPower.BasePrecedence; } }
 
 		private BindingPower m_bindingPower;
 

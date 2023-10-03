@@ -36,6 +36,18 @@ namespace PotatoEval {
 		CloseParen,
 		Question,
 		Colon,
+
+		Equal,
+		PlusEqual,
+		MinusEqual,
+		StarEqual,
+		SlashEqual,
+		PercentEqual,
+		AmpersandEqual,
+		PipeEqual,
+		CarretEqual,
+		LeftLeftEqual,
+		RightRightEqual,
 	}
 
 	internal static class TokenTypeExtensions {
@@ -74,6 +86,19 @@ namespace PotatoEval {
 				case TokenType.CloseParen: return ")";
 				case TokenType.Question: return "?";
 				case TokenType.Colon: return ":";
+
+				case TokenType.Equal: return "=";
+				case TokenType.PlusEqual: return "+=";
+				case TokenType.MinusEqual: return "-=";
+				case TokenType.StarEqual: return "*=";
+				case TokenType.SlashEqual: return "/=";
+				case TokenType.PercentEqual: return "%=";
+				case TokenType.AmpersandEqual: return "&=";
+				case TokenType.PipeEqual: return "|=";
+				case TokenType.CarretEqual: return "^=";
+				case TokenType.LeftLeftEqual: return "<<=";
+				case TokenType.RightRightEqual: return ">>=";
+
 				default: throw new NotImplementedException();
 			}
 		}

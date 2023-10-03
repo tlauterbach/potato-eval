@@ -5,9 +5,10 @@
 		LoadBoolConst,
 		LoadStringConst,
 		LoadIdentifierConst,
-		ValueOf,
 
 		Access,
+		ValueOf,
+		Assignment,
 		Invoke,
 		Addition,
 		Subtraction,
@@ -35,6 +36,8 @@
 		JumpIfTrue,
 		JumpIfFalse,
 		Duplicate,
+		PushToStorage,
+		PopFromStorage
 	}
 
 }

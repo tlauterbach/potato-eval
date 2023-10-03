@@ -68,7 +68,7 @@ namespace PotatoEval {
 			}
 			public Value SetValue(Value value) {
 				m_owner.LogError(new ContextOperationException("SetValue", "Getter", Identifier));
-				return Value.Void;
+				return value;
 			}
 			public Value DeleteValue() {
 				m_owner.LogError(new ContextOperationException("DeleteValue", "Getter", Identifier));
@@ -114,7 +114,7 @@ namespace PotatoEval {
 			}
 			public Value SetValue(Value value) {
 				m_owner.LogError(new ContextOperationException("SetValue", "Function", Identifier));
-				return Value.Void;
+				return value;
 			}
 			public Value DeleteValue() {
 				m_owner.LogError(new ContextOperationException("DeleteValue", "Function", Identifier));
@@ -142,7 +142,7 @@ namespace PotatoEval {
 			}
 			public Value SetValue(Value value) {
 				m_owner.LogError(new ContextOperationException("SetValue", "Context", Identifier));
-				return Value.Void;
+				return value;
 			}
 			public Value DeleteValue() {
 				m_owner.LogError(new ContextOperationException("DeleteValue", "Context", Identifier));
@@ -172,7 +172,7 @@ namespace PotatoEval {
 			}
 			public Value SetValue(Value value) {
 				m_owner.LogError(new ContextOperationException("SetValue", "Constant", Identifier));
-				return Value.Void;
+				return value;
 			}
 			public IContext GetContext() {
 				m_owner.LogError(new ContextOperationException("GetContext", "Constant", Identifier));
@@ -203,7 +203,7 @@ namespace PotatoEval {
 			}
 			public Value SetValue(Value value) {
 				m_value = value;
-				return Value.Void;
+				return value;
 			}
 			public Value DeleteValue() {
 				m_value = Value.Void;
@@ -230,6 +230,7 @@ namespace PotatoEval {
 
 		public Context(ContextErrorMode errorMode) {
 
+			m_errorMode = errorMode;
 			m_members = new Dictionary<Identifier, IMember>();
 
 			Type type = GetType();
@@ -261,11 +262,11 @@ namespace PotatoEval {
 		}
 		public Value SetValue(Identifier id, Value value) {
 			if (m_members.TryGetValue(id, out IMember member)) {
-				return member.SetValue(value);
+				member.SetValue(value);
 			} else {
 				m_members.Add(id, new Variable(this, id, value));
-				return Value.Void;
 			}
+			return value;
 		}
 		public Value DeleteValue(Identifier id) {
 			if (m_members.TryGetValue(id, out IMember member)) {
@@ -387,7 +388,8 @@ namespace PotatoEval {
 		[Function(alias = "set")]
 		private Value SetFunc(Value[] args) {
 			if (!DoArgsMatch(args, 2, ValueKind.Address, ValueKind.Any)) {
-				throw new FunctionException("set requires 2 arguments: address, any");
+				LogError(new FunctionException("set requires 2 arguments: address, any"));
+				return Value.Void;
 			}
 			return ConvertAddress(args[0].AsAddress).SetValue(args[1]);
 		}
@@ -395,7 +397,8 @@ namespace PotatoEval {
 		[Function(alias = "get")]
 		private Value GetFunc(Value[] args) {
 			if (!DoArgsMatch(args, 1, ValueKind.Address)) {
-				throw new FunctionException("get requires 1 argument: address");
+				LogError(new FunctionException("get requires 1 argument: address"));
+				return Value.Void;
 			}
 			return ConvertAddress(args[0].AsAddress).GetValue();
 		}
@@ -407,13 +410,15 @@ namespace PotatoEval {
 			} else if (DoArgsMatch(args, 1, ValueKind.Number)) {
 				return UnityEngine.Random.Range(0, args[0].AsSingle);
 			} else {
-				throw new FunctionException("random requires 1 or 2 arguments: number (,number)");
+				LogError(new FunctionException("random requires 1 or 2 arguments: number (,number)"));
+				return Value.Void;
 			}
 		}
 		[Function(alias = "delete")]
 		private Value DeleteFunc(Value[] args) {
 			if (!DoArgsMatch(args, 1, ValueKind.Address)) {
-				throw new FunctionException("delete requires 1 argument: address");
+				LogError(new FunctionException("delete requires 1 argument: address"));
+				return Value.Void;
 			}
 			return ConvertAddress(args[0].AsAddress).DeleteValue();
 		}

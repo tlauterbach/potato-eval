@@ -44,15 +44,15 @@ public class TestMgr : MonoBehaviour {
 		("num5() == 3", false),
 		("concat(\"a\",\"b\")", "ab"),
 		("concat(\"abc\",\"def\")", "abcdef"),
-		("set(foo, 5)", Value.Void),
+		("set(foo, 5)", 5),
 		("get(foo)", 5),
 		("get(foo) + 5", 10),
-		("set(id, foo)", Value.Void),
+		("set(id, foo)", new Address("foo")),
 		("get(get(id))", 5),
 	};
 	private static readonly List<(string, object)> m_testContexts = new List<(string, object)>() {
-		("set(bar, true)", Value.Void),
-		("set(foo, true)", Value.Void),
+		("set(bar, true)", true),
+		("set(foo, true)", true),
 		("$foo", true),
 		("$bar == true", true),
 		("$bar != false", true),
@@ -61,14 +61,40 @@ public class TestMgr : MonoBehaviour {
 		("delete(bar)", true),
 		("delete(foo)", true),
 		("context.num5()", 5),
-		("context.set(foo, 3)", Value.Void),
+		("context.set(foo, 3)", 3),
 		("$context.foo", 3),
 		("num5() + context.get(foo)", 8),
 		("num5() + $context.foo", 8),
 		("get(context.foo)", 3),
-		("context.set(fizz, context.foo)", Value.Void),
+		("context.set(fizz, context.foo)", new Address("context.foo")),
 		("$context.fizz == context.foo", true),
 		("get($context.fizz)", 3),
+		("$$context.fizz", 3 ),
+		("delete(context.foo)", true),
+		("delete(context.fizz)", true)
+	};
+	private static readonly List<(string, object)> m_testAssignments = new List<(string, object)>() {
+		("foo = 5", 5),
+		("foo += 5", 10),
+		("foo -= 5", 5),
+		("foo *= 5", 25),
+		("foo /= 25", 1),
+		("foo <<= 1", 1 << 1),
+		("foo >>= 1", 1),
+		("foo |= 1", 1),
+		("foo &= 2", 0),
+		("foo ^= 3", 0 ^ 3),
+		("foo = (bar = 2)", 2),
+		("$foo", 2),
+		("foo = bar += 1", 3),
+		("bar = fizz", new Address("fizz")),
+		("fizz = 10", 10),
+		("$foo", 3),
+		("$foo + 7 == $fizz", true),
+		("foo += $fizz", 13),
+		("foo -= $fizz", 3),
+		("foo = $bar", new Address("fizz")),
+		("foo = $$bar", 10),
 	};
 
 
@@ -89,6 +115,9 @@ public class TestMgr : MonoBehaviour {
 			AssertEquals(tuple, tuple.Item1);
 		}
 		foreach ((string, object) tuple in m_testContexts) {
+			AssertEquals(tuple, tuple.Item1);
+		}
+		foreach ((string, object) tuple in m_testAssignments) {
 			AssertEquals(tuple, tuple.Item1);
 		}
 	}
@@ -115,7 +144,9 @@ public class TestMgr : MonoBehaviour {
 			return value.IsNumber && value.AsDouble == number;
 		} else if (obj is bool boolean) {
 			return value.IsBool && value.AsBool == boolean;
-		} else { 
+		} else if (obj is Address address) {
+			return value.IsAddress && value.AsAddress == address;
+		} else {
 			throw new NotImplementedException();
 		}
 	}

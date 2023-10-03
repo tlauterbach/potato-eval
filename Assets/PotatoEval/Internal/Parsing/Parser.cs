@@ -40,6 +40,18 @@ namespace PotatoEval {
 			{ TokenType.Ampersand,			new InfixOpParselet(BindingPower.BitwiseAnd, OpCode.BitwiseAnd) },
 			{ TokenType.Pipe,				new InfixOpParselet(BindingPower.BitwiseOr, OpCode.BitwiseOr) },
 			{ TokenType.Carret,				new InfixOpParselet(BindingPower.BitwiseXor, OpCode.BitwiseXor) },
+
+			{ TokenType.Equal,              new AssignmentParselet(BindingPower.Assignment) },
+			{ TokenType.PlusEqual,          new AssignmentParselet(BindingPower.Assignment, OpCode.Addition) },
+			{ TokenType.MinusEqual,         new AssignmentParselet(BindingPower.Assignment, OpCode.Subtraction) },
+			{ TokenType.StarEqual,          new AssignmentParselet(BindingPower.Assignment, OpCode.Multiplication) },
+			{ TokenType.SlashEqual,         new AssignmentParselet(BindingPower.Assignment, OpCode.Division) },
+			{ TokenType.PercentEqual,       new AssignmentParselet(BindingPower.Assignment, OpCode.Modulo) },
+			{ TokenType.LeftLeftEqual,      new AssignmentParselet(BindingPower.Assignment, OpCode.ShiftLeft) },
+			{ TokenType.RightRightEqual,    new AssignmentParselet(BindingPower.Assignment, OpCode.ShiftRight) },
+			{ TokenType.AmpersandEqual,     new AssignmentParselet(BindingPower.Assignment, OpCode.BitwiseAnd) },
+			{ TokenType.PipeEqual,          new AssignmentParselet(BindingPower.Assignment, OpCode.BitwiseOr) },
+			{ TokenType.CarretEqual,        new AssignmentParselet(BindingPower.Assignment, OpCode.BitwiseXor) },
 		};
 
 		private IErrorLogger m_logger;
