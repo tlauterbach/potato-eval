@@ -22,6 +22,12 @@ namespace PotatoEval {
 		public ValueKind Type {
 			get { return m_type; }
 		}
+		public string RawString { 
+			get { return m_string; } 
+		}
+		public double RawNumber { 
+			get { return m_number; } 
+		}
 
 		private ValueKind m_type;
 		private uint m_hash;
@@ -166,128 +172,49 @@ namespace PotatoEval {
 		#region Type Conversions
 
 		public Address AsAddress {
-			get {
-				if (IsAddress) {
-					return new Address(m_string);
-				} else {
-					throw InvalidCast(m_type, ValueKind.Address);
-				}
-			}
+			get { return ValueConverter.StrongChecked.ToAddress(this); }
 		}
 		public bool AsBool {
-			get {
-				if (IsBool) {
-					return m_number == 0 ? false : true;
-				} else {
-					throw InvalidCast(m_type, ValueKind.Boolean); 
-				}
-			}
+			get { return ValueConverter.StrongChecked.ToBool(this); }
 		}
 		public string AsString {
-			get {
-				if (IsString) {
-					return m_string;
-				} else {
-					throw InvalidCast(m_type, ValueKind.String);
-				}
-			}
+			get { return ValueConverter.StrongChecked.ToString(this); }
 		}
 		public double AsDouble {
-			get {
-				if (IsNumber) {
-					return m_number;
-				} else {
-					throw InvalidCast(m_type, ValueKind.Number);
-				}
-			}
+			get { return ValueConverter.StrongChecked.ToDouble(this); }
 		}
 		public float AsSingle {
-			get {
-				if (IsNumber) {
-					return Convert.ToSingle(m_number);
-				} else {
-					throw InvalidCast(m_type, ValueKind.Number);
-				}
-			}
+			get { return ValueConverter.StrongChecked.ToSingle(this); }
+		}
+		public decimal AsDecimal {
+			get { return ValueConverter.StrongChecked.ToDecimal(this); }
 		}
 		public int AsInt32 {
-			get {
-				if (IsNumber) {
-					return Convert.ToInt32(m_number);
-				} else {
-					throw InvalidCast(m_type, ValueKind.Number);
-				}
-			}
+			get { return ValueConverter.StrongChecked.ToInt32(this); }
 		}
 		public short AsInt16 {
-			get {
-				if (IsNumber) {
-					return Convert.ToInt16(m_number);
-				} else {
-					throw InvalidCast(m_type, ValueKind.Number);
-				}
-			}
+			get { return ValueConverter.StrongChecked.ToInt16(this); }
 		}
 		public long AsInt64 {
-			get {
-				if (IsNumber) {
-					return Convert.ToInt64(m_number);
-				} else {
-					throw InvalidCast(m_type, ValueKind.Number);
-				}
-			}
+			get { return ValueConverter.StrongChecked.ToInt64(this); }
 		}
 		public uint AsUInt32 {
-			get {
-				if (IsNumber) {
-					return Convert.ToUInt32(m_number);
-				} else {
-					throw InvalidCast(m_type, ValueKind.Number);
-				}
-			}
+			get { return ValueConverter.StrongChecked.ToUInt32(this); }
 		}
 		public ushort AsUInt16 {
-			get {
-				if (IsNumber) {
-					return Convert.ToUInt16(m_number);
-				} else {
-					throw InvalidCast(m_type, ValueKind.Number);
-				}
-			}
+			get { return ValueConverter.StrongChecked.ToUInt16(this); }
 		}
 		public ulong AsUInt64 {
-			get {
-				if (IsNumber) {
-					return Convert.ToUInt64(m_number);
-				} else {
-					throw InvalidCast(m_type, ValueKind.Number);
-				}
-			}
+			get { return ValueConverter.StrongChecked.ToUInt64(this); }
 		}
 		public byte AsByte {
-			get {
-				if (IsNumber) {
-					return Convert.ToByte(m_number);
-				} else {
-					throw InvalidCast(m_type, ValueKind.Number);
-				}
-			}
+			get { return ValueConverter.StrongChecked.ToByte(this); }
 		}
 		public sbyte AsSByte {
-			get {
-				if (IsNumber) {
-					return Convert.ToSByte(m_number);
-				} else {
-					throw InvalidCast(m_type, ValueKind.Number);
-				}
-			}
+			get { return ValueConverter.StrongChecked.ToSByte(this); }
 		}
 
 		#endregion
-
-		private static InvalidCastException InvalidCast(ValueKind from, ValueKind to) {
-			return new InvalidCastException($"Cannot cast Value from type {from} to {to}");
-		}
 
 		public bool IsType(ValueKind type) {
 			if (m_type == ValueKind.Void) {

@@ -84,7 +84,7 @@ public class TestMgr : MonoBehaviour {
 		("foo |= 1", 1),
 		("foo &= 2", 0),
 		("foo ^= 3", 0 ^ 3),
-		("foo = (bar = 2)", 2),
+		("foo = bar = 2", 2),
 		("$foo", 2),
 		("foo = bar += 1", 3),
 		("bar = fizz", new Address("fizz")),
@@ -131,9 +131,7 @@ public class TestMgr : MonoBehaviour {
 	}
 
 	private bool InputEquals(string input, object obj, out Value value) {
-		if (!Evaluate(input, out value)) {
-			return false;
-		}
+		value = Evaluate(input);
 		if (obj is Value objValue) {
 			return value == objValue;
 		} else if (obj is string str) {
@@ -151,27 +149,8 @@ public class TestMgr : MonoBehaviour {
 		}
 	}
 
-	private bool Evaluate(string input, out Value value) {
-		ExpressionResult result = m_evaluator.ToExpression(input);
-		if (result.HasError) {
-			LogErrors(result);	
-			value = Value.Void;
-			return false;
-		}
-		ValueResult valueResult = m_evaluator.Evaluate(result, m_context1);
-		if (valueResult.HasError) {
-			LogErrors(valueResult);
-			value = Value.Void;
-			return false;
-		}
-		value = valueResult;
-		return true;
-	}
-	private Value LogErrors(IErrorLogger result) {
-		foreach (Exception e in result.Errors) {
-			Debug.LogException(e);
-		}
-		return Value.Void;
+	private Value Evaluate(string input) {
+		return m_evaluator.Evaluate(m_evaluator.ToExpression(input), m_context1);
 	}
 
 

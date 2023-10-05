@@ -3,7 +3,7 @@
 namespace PotatoEval {
 
 	internal enum TokenType {
-		Undefined,
+		Void,
 		False,
 		True,
 		Identifier,
@@ -54,7 +54,7 @@ namespace PotatoEval {
 
 		public static string ToSymbol(this TokenType type) {
 			switch (type) {
-				case TokenType.Undefined: return "undefined";
+				case TokenType.Void: return "void";
 				case TokenType.False: return "false";
 				case TokenType.True: return "true";
 				case TokenType.Identifier: return "[identifier]";

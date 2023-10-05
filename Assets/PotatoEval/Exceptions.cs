@@ -2,31 +2,31 @@
 
 namespace PotatoEval {
 
-	public class CastException : InvalidCastException {
-		internal CastException(string type) : base(
-			$"Cannot cast string to `{type}'"
+	public class ConversionException : InvalidCastException {
+		public ConversionException(string src, string dest) : base(
+			$"Cannot cast `{src}' to `{dest}'"
 		) { }
-		internal CastException(string typeA, string typeB) : base(
-			$"Cannot cast `{typeA}' to `{typeB}'"
+		public ConversionException(ValueKind src, ValueKind dest) : base(
+			$"Cannot cast `{src}' to `{dest}'"
 		) { }
 	}
 
 	public class UndefinedMemberException : Exception {
-		internal UndefinedMemberException(string type, Identifier identifier) : base(
+		public UndefinedMemberException(string type, Identifier identifier) : base(
 			$"{type} with identifier `{identifier}' is not defined"
 		) { }
 	}
 	public class ContextOperationException : Exception {
-		internal ContextOperationException(string operation, string type, Identifier identifier) : base(
+		public ContextOperationException(string operation, string type, Identifier identifier) : base(
 			$"Cannot {operation} with identifier {identifier} because it is a {type}"
 		) { }
 	}
 	public class FunctionException : Exception {
-		internal FunctionException(string message) : base(message) {
+		public FunctionException(string message) : base(message) {
 		}
 	}
 	public class PrexistingMemberException : Exception {
-		internal PrexistingMemberException(Identifier id) : base(
+		public PrexistingMemberException(Identifier id) : base(
 			$"Member with identifier `{id}' is already defined"
 		) { }
 	}

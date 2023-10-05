@@ -17,7 +17,7 @@ namespace PotatoEval {
 		}
 
 		private readonly List<IPattern> m_patterns = new List<IPattern>() {
-			new PatternKeyword(TokenType.Undefined, "undefined"),
+			new PatternKeyword(TokenType.Void, "void"),
 			new PatternKeyword(TokenType.False, "false"),
 			new PatternKeyword(TokenType.True, "true"),
 			new PatternIdentifier(),
@@ -94,11 +94,15 @@ namespace PotatoEval {
 				}
 				if (!addedToken) {
 					m_logger.LogError($"Unrecognized character `{Peek()}' in expression.");
-					yield break;
+				}
+				if (m_logger.HasError) {
+					break;
 				}
 			}
-			foreach (Token token in m_output) {
-				yield return token;
+			if (!m_logger.HasError) {
+				foreach (Token token in m_output) {
+					yield return token;
+				}
 			}
 			m_input = null;
 			m_index = 0;
