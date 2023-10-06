@@ -43,22 +43,98 @@ public class MyBehaviour : MonoBehaviour {
 
   }
 }
-
 ```
 
-# Expression Syntax
+# Language
+### Constants & Literals
+| Pattern | Output | Prefix |
+|-----|----|----|
+| `void` | `Void` | `void` keyword constant |
+| `true` | `Boolean` | `true` boolean constant |
+| `false` | `Boolean` | `false` boolean constant |
+| `Identifier`* | `Address` | `Identifier` literal |
+| `Number`* | Number | `Number` literal |
+| `String`* | `String` | `String` literal |
+
+### Prefix Operators
+| Pattern | Operation | Input | Output
+|----|----|----|----|
+| `(`...`)` | Group | - | - |
+| `!` | Logical NOT | `Boolean` | `Boolean` |
+| `-` | Negate | `Number` | `Number` |
+| `~` | Bitwise NOT | `Number` | `Number` |
+| `$` | Value Of | `Address` | `Any` |
+
+### Infix Operators
+| Pattern | Operation | Input | Output |
+|----|----|----|----|
+| `(`[...`,`] `)` | Function | `Any` | `Any` | 
+| `.` | Access | `Address, Address` | `Address` |
+| `==` | Equals | `Any, Any` | `Boolean` |
+| `!=` | Not-Equals | `Any, Any` | `Boolean` |
+| `>=` | Greater Than or Equal To | `Number, Number` | `Boolean` |
+| `<=` | Less Than or Equal To | `Number, Number` | `Boolean` |
+| `>` | Greater Than | `Number, Number` | `Boolean` |
+| `<` | Less Than | `Number, Number` | `Boolean` |
+| `&&` | Logical AND | `Boolean, Boolean` | `Boolean` |
+| `\|\|` | Logical OR | `Boolean, Boolean` | `Boolean` |
+| `+` | Addition | `Number, Number` | `Number` |
+| `-` | Subtraction | `Number, Number` | `Number` |
+| `*` | Multiplication | `Number, Number` | `Number` |
+| `/` | Division | `Number, Number` | `Number` |
+| `%` | Modulo | `Number, Number` | `Number` |
+| `<<` | Shift Left | `Number, Number` | `Number` |
+| `>>` | Shift Right | `Number, Number` | `Number` |
+| `&` | Bitwise AND | `Number, Number` | `Number` |
+| `\|` | Bitwise OR | `Number, Number` | `Number` |
+| `^` | Bitwise XOR | `Number, Number` | `Number` |
+| `=` | Assignment | `Address, Any` | `Any` |
+| `+=` | Addition Assignment | `Address, Number` | `Number` |
+| `-=` | Subtraction Assignment | `Address, Number` | `Number` |
+| `*=` | Multiplication Assignment | `Address, Number` | `Number` |
+| `/=` | Division Assignment | `Address, Number` | `Number` |
+| `%=` | Modulo Assignment | `Address, Number` | `Number` |
+| `<<=` | Shift Left Assignment | `Address, Number` | `Number` |
+| `>>=` | Shift Right Assignment | `Address, Number` | `Number` |
+| `&=` | Bitwise AND Assignment | `Address, Number` | `Number` |
+| `\|=` | Bitwise OR Assignment | `Address, Number` | `Number` |
+| `^=` | Bitwise XOR Assignment | `Address, Number` | `Number` |
+| `?`...`:`... | Ternary | `Boolean, Any, Any` | `Any` |
+
+
+
+### Binding Power
+| Category | Operators | Precedence | Associativity |
+|----|----|----|----|
+| Postfix | `(` `)` `.` | 150 | Left to Right |
+| Unary | `-` `!` `~` `$` | 140 | Right to Left |
+| Multiplicative | `*` `/` `%` | 130 | Left to Right |
+| Additive | `+` `-` | 120 | Left to Right |
+| Shift | `<<` `>>` | 110 | Left to Right | 
+| Relational | `<` `<=` `>` `>=` | 100 | Left to Right |
+| Equality | `==` `!=` | 90 | Left to Right |
+| Bitwise AND | `&` | 80 | Left to Right |
+| Bitwise XOR | `^` | 70 | Left to Right |
+| Bitwise OR | `\|` | 60 | Left to Right |
+| Logical AND | `&&` | 50 | Left to Right |
+| Logical OR | `\|\|` | 40 | Left to Right |
+| Conditional | `?` `:` | 30 | Right to Left |
+| Assignment | `=` `+=` `-=` `*=` `/=` `%=` `<<=` `>>=` `&=` `^=` `\|=` | 20 | Right to Left |
+| Comma | | 10 | Left to Right |
+
 
 ## Value Types
 
-After parsing 
+_Values_ are the main output given when evaluating expressions; the [`Value` struct](Assets/PotatoEval/Value.cs) provides a range of possible values and can be converted to built in C# primitive value types. You can convert a `Value` struct to these types by using an `As[Type]` property on the Value (defaulting to a Strongly typed, Checked conversion) or by using an [`IValueConverter`](Assets/PotatoEval/IValueConverter.cs) like the [`ValueConverter`](Assets/PotatoEval/ValueConverter.cs) class or your own implementation. You can also do conversions using the provided `RawNumber` and `RawString` properties of the `Value` struct if you wish to operate outside the libraries rules. 
 
 | Type | Description | Examples |
 |-----|-----|-----|
-| Number | Value stored as a `double` inside the `Value` struct. Can be converted to primitive number types recognized by C# (all except `decimal`) provided that the falls within the valid range of the primitive type. | `1` `3.3` `-20301` `0.233203`|
-| String | A string of character stored as a `string` inside the `Value` struct. Can only be converted to a C# `string`. | `"string"` `"of"` `"characters"` |
-| Boolean | A true or false value stored as a `bool` inside the `Value` struct. Can only be converted to a C# `bool`. | `true` `false` |
+| Void | An empty Value considered the default value of the `Value` struct (ie, the `RawNumber` and `RawString` are `0` and `null`) | |
+| Number | Value stored as a `double` inside the `Value` struct. | `1` `3.3` `-20301` `0.233203`|
+| String | A string of character stored as a `string` inside the `Value` struct. | `"string"` `"of"` `"characters"` |
+| Boolean | A true or false value stored as a `double` inside the `Value` struct. | `true` `false` |
 | Address | Any number of `Identifier`s strung together using the Access (`.`) operator and stored as a `string` inside the `Value` struct. | `id` `context.foo` |
 
-
-
 ## Value Of Operator
+
+
