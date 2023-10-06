@@ -44,6 +44,46 @@ public class MyBehaviour : MonoBehaviour {
   }
 }
 ```
+# Concepts
+
+## Value Types
+
+_Values_ are the main output given when evaluating expressions; the [`Value` struct](Assets/PotatoEval/Value.cs) provides a range of possible values and can be converted to built in C# primitive value types. You can convert a `Value` struct to these types by using an `As[Type]` property on the Value (defaulting to a Strongly typed, Checked conversion) or by using an [`IValueConverter`](Assets/PotatoEval/IValueConverter.cs) like the [`ValueConverter`](Assets/PotatoEval/ValueConverter.cs) class or your own implementation. You can also do conversions using the provided `RawNumber` and `RawString` properties of the `Value` struct if you wish to operate outside the library's rules. 
+
+| Type | Description | Examples |
+|-----|-----|-----|
+| Void | An empty Value considered the default value of the `Value` struct (ie, the `RawNumber` and `RawString` are `0` and `null`) | |
+| Number | Value stored as a `double` inside the `Value` struct. | `1` `3.3` `-20301` `0.233203`|
+| String | A string of character stored as a `string` inside the `Value` struct. | `"string"` `"of"` `"characters"` |
+| Boolean | A true or false value stored as a `double` inside the `Value` struct. | `true` `false` |
+| Address | Any number of `Identifier`s strung together using the Access (`.`) operator and stored as a `string` inside the `Value` struct. | `id` `context.foo` |
+
+## Value Of Operator
+
+Because expressions can have _Addresses_, a special operator is used to ask your `IContext` for the value that the _Address_ represents.
+```
+$foo // outputs the value of foo provided by the `IContext`
+```
+_Addresses_ can recurse and be used to get values within child contexts of the `IContext`
+```
+$foo.bar // outputs the value of the `bar` value of the `foo` context of your `IContext`
+```
+
+## Assignment Operators
+
+You can also use _Assignment_ operators to set values within your context. Note that _Assignment_ operators use an _Address_ on the left-hand side, so the Value Of Operator is not used.
+```
+foo = 5 // assigns the value 5 to foo within the `IContext`
+```
+With the regular _Assignment_ operator, you can even set the value to another Address.
+```
+foo = bar // assigns the value `bar` (an Address) to foo within the `IContext`
+```
+If you wanted to set `foo` to the value of `bar`, you would instead add a Value Of Operator to bar
+```
+foo = $bar // assigns the value of bar to foo within the `IContext`
+```
+
 
 # Language
 ### Constants & Literals
@@ -121,20 +161,5 @@ public class MyBehaviour : MonoBehaviour {
 | Conditional | `?` `:` | 30 | Right to Left |
 | Assignment | `=` `+=` `-=` `*=` `/=` `%=` `<<=` `>>=` `&=` `^=` `\|=` | 20 | Right to Left |
 | Comma | | 10 | Left to Right |
-
-
-## Value Types
-
-_Values_ are the main output given when evaluating expressions; the [`Value` struct](Assets/PotatoEval/Value.cs) provides a range of possible values and can be converted to built in C# primitive value types. You can convert a `Value` struct to these types by using an `As[Type]` property on the Value (defaulting to a Strongly typed, Checked conversion) or by using an [`IValueConverter`](Assets/PotatoEval/IValueConverter.cs) like the [`ValueConverter`](Assets/PotatoEval/ValueConverter.cs) class or your own implementation. You can also do conversions using the provided `RawNumber` and `RawString` properties of the `Value` struct if you wish to operate outside the libraries rules. 
-
-| Type | Description | Examples |
-|-----|-----|-----|
-| Void | An empty Value considered the default value of the `Value` struct (ie, the `RawNumber` and `RawString` are `0` and `null`) | |
-| Number | Value stored as a `double` inside the `Value` struct. | `1` `3.3` `-20301` `0.233203`|
-| String | A string of character stored as a `string` inside the `Value` struct. | `"string"` `"of"` `"characters"` |
-| Boolean | A true or false value stored as a `double` inside the `Value` struct. | `true` `false` |
-| Address | Any number of `Identifier`s strung together using the Access (`.`) operator and stored as a `string` inside the `Value` struct. | `id` `context.foo` |
-
-## Value Of Operator
 
 
