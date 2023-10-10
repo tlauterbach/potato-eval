@@ -1,0 +1,21 @@
+{
+  "name": "com.potatointeractive.eval",
+  "version": "1.0.0",
+  "displayName": "PotatoEval",
+  "description": "Expression Parser and Evaluator package for Unity/C#",
+  "unity": "2019.4",
+  "type": "utilities",
+  "dependencies": {
+  },
+  "keywords": [
+    "Unity", "expressions", "parser", "evaluator"
+  ],
+  "author": {
+    "name": "Terra Lauterbach",
+    "email": "potatointeractive@gmail.com",
+    "url": "https://rottentater.com/"
+  },
+  "publishConfig": {
+    "registry": "https://package.openupm.com"
+  }
+}
