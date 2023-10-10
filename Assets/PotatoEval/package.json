@@ -1,6 +1,6 @@
 {
   "name": "com.potatointeractive.eval",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "displayName": "PotatoEval",
   "description": "Expression Parser and Evaluator package for Unity/C#",
   "unity": "2019.4",

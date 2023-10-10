@@ -3,7 +3,7 @@ Expression Parser and Evaluator package for Unity/C#
 
 | Package Name | Package Version | Unity Version |
 |-----|-----|-----|
-| com.potatointeractive.eval | 1.0.0 | 2019.4+ |
+| com.potatointeractive.eval | 1.0.1 | 2019.4+ |
 
 [Changelog](CHANGELOG.md)
 
